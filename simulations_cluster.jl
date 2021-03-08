@@ -315,7 +315,7 @@ function create_folder(ip::cv.ModelParameters,vaccine="none",value="none",heatma
     #RF = string("heatmap/results_prob_","$(replace(string(ip.β), "." => "_"))","_vac_","$(replace(string(ip.vaccine_ef), "." => "_"))","_herd_immu_","$(ip.herd)","_$strategy","cov_$(replace(string(ip.cov_val)))") ## 
     main_folder = "/data/thomas-covid/delay_review"
     if heatmap
-        RF = string(main_folder,"/curves/results_prob_","$(replace(string(ip.β), "." => "_"))","_herd_immu_","$(ip.herd)_vac_","$vaccine","_$value","_$strategy")
+        RF = string(main_folder,"/curves_reduction/results_prob_","$(replace(string(ip.β), "." => "_"))","_herd_immu_","$(ip.herd)_vac_","$vaccine","_$value","_$strategy")
     else
         RF = string(main_folder,"/results_prob_","$(replace(string(ip.β), "." => "_"))","_herd_immu_","$(ip.herd)_vac_","$vaccine","_$strategy")
     end

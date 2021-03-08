@@ -80,13 +80,14 @@ end
     vaccinating_appendix::Bool = false
     
     
-    hcw_vac_comp::Float64 = 0.7
+    hcw_vac_comp::Float64 = 0.95
     hcw_prop::Float64 = 0.05 #prop que é trabalhador da saude
-    comor_comp::Float64 = 0.5 #prop comorbidade tomam
-    eld_comp::Float64 = 0.70
+    comor_comp::Float64 = 0.7 #prop comorbidade tomam
+    eld_comp::Float64 = 0.95
     young_comp::Float64 = 0.22
+    gen_cov::Float64 = 0.7
+
     vac_period::Int64 = 21
-    sec_dose_comp::Float64 = 0.7
     daily_cov::Float64 = 0.008 ####also run for 0.008 per day
     n_comor_comp::Float64 = 0.387
     days_to_protection::Array{Array{Int64,1},1} = [[14],[0;14]]
@@ -101,7 +102,8 @@ end
     days_before::Int64 = 0 ### six weeks of vaccination
     single_dose::Bool = false
     drop_rate::Float64 = 0.0
-    fixed_cov::Float64 = 0.50
+    fixed_cov::Float64 = 0.5
+    no_cap::Bool = true
 
     red_risk_perc::Float64 = 1.0
     reduction_protection::Float64 = 0.0
@@ -117,8 +119,8 @@ end
     initialinf2::Int64 = 1
     max_vac_delay::Int64 = 42
     min_eff = 0.02
-    ef_decrease_per_week = 0.0
-    vac_effect::Int64 = 1
+    ef_decrease_per_week = 0.05
+    vac_effect::Int64 = 2
 end
 
 Base.@kwdef mutable struct ct_data_collect
@@ -435,7 +437,7 @@ function vac_selection()
     pos_eld = sample(pos_eld,Int(round(p.eld_comp*length(pos_eld))),replace=false)
 
     pos_n_com = findall(x->humans[x].comorbidity == 0 && !(x in pos_hcw) && humans[x].age<65 && humans[x].age>=18, 1:length(humans))
-    pos_n_com = sample(pos_n_com,Int(round(length(pos_n_com))),replace=false)
+    pos_n_com = sample(pos_n_com,Int(round(p.gen_cov*length(pos_n_com))),replace=false)
     #pos_y = findall(x-> humans[x].age<18, 1:length(humans))
     #pos_y = sample(pos_y,Int(round(p.young_comp*length(pos_y))),replace=false)
 
@@ -458,6 +460,11 @@ function vac_selection()
             aux = Int(round(p.cov_val*p.popsize))
             v = v[1:aux]
         end
+
+    elseif p.no_cap
+       
+        ##nothing to do v is v
+
     else
         if p.fixed_cov*p.popsize > length(v)
             error("general population compliance is not enough to reach the coverage.")
@@ -687,7 +694,7 @@ function vac_update(x::Human)
         x.days_vac += 1
         
     elseif x.vac_status == 2
-        if x.days_vac == p.days_to_protection[x.vac_status][1]#7
+        if x.days_vac == p.days_to_protection[x.vac_status][1]#0
             if p.vac_effect == 1
                 aux = (p.vac_efficacy_inf[x.vac_status][1]-p.vac_efficacy_inf[1][length(p.vac_efficacy_inf[1])])+x.vac_ef_inf #0.43 + x = second dose
                 if aux < p.vac_efficacy_inf[1][length(p.vac_efficacy_inf[1])]
